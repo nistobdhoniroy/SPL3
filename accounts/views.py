@@ -1,0 +1,168 @@
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import CustomerSignUpForm, SellerSignUpForm, UserUpdateForm, ProfileUpdateForm, CustomerUpdateForm
+from django.contrib.auth.decorators import login_required
+
+from django.http import HttpResponse
+from django.contrib.auth import login, authenticate
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.template.loader import render_to_string
+from .tokens import account_activation_token
+from accounts.models import User
+from django.core.mail import EmailMessage
+from .models import Seller, Customer
+from django.views.generic import CreateView, DetailView, View
+from accounts.decorators import seller_required, customer_required
+
+
+# Create your views here.
+
+def register(request):
+
+    return render(request, 'accounts/register.html')
+
+
+class CustomerSignUpView(CreateView):
+    model = User
+    form_class = CustomerSignUpForm
+    template_name = 'accounts/signup_form.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'customer'
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.is_active = False
+        user.save()
+
+        current_site = get_current_site(self.request)
+        mail_subject = 'Activate your Customer account.'
+        message = render_to_string('acc_active_email.html', {
+            'accounts': user,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': account_activation_token.make_token(user),
+        })
+        to_email = form.cleaned_data.get('email')
+        email = EmailMessage(
+            mail_subject, message, to=[to_email]
+        )
+        email.send()
+        return HttpResponse('Please confirm your email address to complete the registration')
+
+
+class SellerSignUpView(CreateView):
+    model = User
+    form_class = SellerSignUpForm
+    template_name = 'accounts/signup_form.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'seller'
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        user = form.save()
+        user.is_active = False
+        user.save()
+
+        current_site = get_current_site(self.request)
+        mail_subject = 'Activate your Seller account.'
+        message = render_to_string('acc_active_email.html', {
+            'accounts': user,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': account_activation_token.make_token(user),
+        })
+        to_email = form.cleaned_data.get('email')
+        email = EmailMessage(
+            mail_subject, message, to=[to_email]
+        )
+        email.send()
+        return HttpResponse('Please confirm your email address to complete the registration')
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+
+        if user.is_customer:
+            customer = Customer.objects.create(user=user)
+
+        login(request, user)
+        return render(request, 'accounts/register_activation.html')
+    else:
+        return HttpResponse('Activation link is invalid!')
+  
+
+@login_required
+@seller_required
+def seller_profile(request):
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        # p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=Seller.objects.get(user=request.user))
+
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.info(request, "Your account has been updated.")
+            return redirect('dashboard')
+
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+
+        p_form = ProfileUpdateForm(instance=Seller.objects.get(user=request.user))
+        # p_form = ProfileUpdateForm(instance=request.user.profile)
+
+    context={
+        'u_form': u_form,
+        'p_form': p_form,
+        'accounts': request.user,
+    }
+    return render(request, 'accounts/seller_profile.html', context)
+
+
+def view_profile(request):
+    user = request.user
+    return render(request, 'accounts/seller_profile.html', {"accounts": user})
+
+
+def seller_home(request):
+    context={
+        'sellers': User.objects.all()
+    }
+    return render(request, 'accounts/seller_home.html', context)
+
+
+@login_required
+@customer_required
+def customer_profile(request):
+    if request.method == 'POST':
+
+        p_form = CustomerUpdateForm(request.POST, request.FILES, instance=Customer.objects.get(user=request.user))
+
+        if p_form.is_valid():
+            p_form.save()
+            messages.info(request, "Your profile has been updated.")
+            return redirect('customer_profile')
+
+    else:
+        p_form = CustomerUpdateForm(instance=Customer.objects.get(user=request.user))
+        # p_form = ProfileUpdateForm(instance=request.user.profile)
+
+    customer = Customer.objects.get(user=request.user)
+    context={
+        'p_form': p_form,
+        'accounts': request.user,
+        'customer': customer
+    }
+    return render(request, 'accounts/customer_profile.html', context)

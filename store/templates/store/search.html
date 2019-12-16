@@ -1,0 +1,77 @@
+{% extends 'store/basic.html' %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+
+{% block css %}
+    <style>
+    .text-center{
+        font-size: 10px;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+
+<br><br>
+    <div class="container">
+        <h3> Search results across Virtual Marketplace stores</h3>
+        <div class="row">
+        {% if same_products|length > 0 %}
+        {% for product in same_products %}
+            <div class="col-md-2 product-grid">
+                <div class="image">
+                    <a href="{% url 'product_view' product.id %}">
+                        <img src="/media/{{product.image}}" class="w-100">
+
+                    </a>
+                </div>
+                <h5 class="text-center"> {{ product.name }} </h5>
+                <h5 class="text-center">Taka.  {{ product.price }} </h5>
+                <h5 class="text-center">Seller: {{ product.seller.username }} </h5>
+
+            </div>
+
+        {% endfor %}
+        {% else%}
+              <h4> No Products Found</h4>
+            <br><br>
+        {% endif %}
+        </div>
+
+    </div>
+
+
+   <div class="container">
+         <h3> Search results across different web stores</h3>
+        <div class="row">
+        {% if similar_products_real_vendor|length > 0 %}
+            {% for product in similar_products_real_vendor %}
+            <div class="col-sm-2 product-grid">
+
+                    <div class="image">
+                        <a href="{{ product.link }}">
+                             {% if product.seller == "othoba" %}
+                            <img src="{% static "images/othoba.jpg" %}" class="w-100">
+                            {% elif product.seller == "picaboo" %}
+                            <img src="{% static "images/picaboo.png" %}" class="w-100">
+                            {% endif %}
+                        </a>
+                    </div>
+                    <h5 class="text-center"> {{ product.title }} </h5>
+                    <h5 class="text-center">Price: {{ product.price }} </h5>
+
+             </div>
+            {% endfor %}
+        {% else%}
+              <h4> No Products Found</h4>
+        {% endif %}
+        </div>
+
+    </div>
+
+<br><br>
+
+
+
+{% endblock %}

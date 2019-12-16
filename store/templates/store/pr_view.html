@@ -1,0 +1,147 @@
+{#<div>#}
+{#    <h5>{{product.product_name}}</h5>#}
+{#    <p><b>Taka.{{product.price}} </b></p>#}
+{#    <p>{{product.description}}</p>#}
+{#    <a href="{% url 'view-profile' product.accounts.username %}"> {{product.accounts.username}}</a>#}
+{#</div>#}
+
+{% extends 'store/basic.html' %}
+
+{% block title%} {{product.product_name}} - {{product.seller.profile.store_name}}{% endblock %}
+{% block content %}
+{#    <a href="{% url 'store_view' product.accounts.username %}"> Go to Store {{product.accounts.profile.store_name}}  </a>#}
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home_view'%}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'store_view' product.seller.username %}"> {{  product.seller.profile.store_name }}</a></li>
+        <li class="breadcrumb-item"><a href="#">{{product.product_name}}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Data</li>
+      </ol>
+    </nav>
+    <br>
+
+<div class="container my-4">
+    <div class="row">
+    <div class="col-md-4">
+    <div class="row">
+        <img src="/media/{{product.product_image}}" width="233px" height="385px">
+
+
+    </div>
+        <div class="row">
+            <button class="btn btn-danger mx-3">Buy Now</button>
+
+            <span id="divpr{{product.id}}" class="divpr">
+                <button id="pr{{product.id}}" class="btn btn-primary cart">Add To Cart</button>
+            </span>
+
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <h5 id="namepr{{product.id}}">{{product.product_name}}</h5>
+        <b> Taka. <p id="pricepr{{product.id}}"> {{product.price}} </p> </b>
+        <p>{{product.description}}</p>
+        <p>{{product.product_image}} </p>
+    </div>
+    </div>
+</div>
+
+    <ul class="nav nav-pills">
+  <li class="nav-item">
+    <a class="nav-link active" href="#">Active</a>
+      <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+          Repudiandae fugiat et voluptate sunt officia vero molestias.
+</p>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Link</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Link</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link disabled" href="#">Disabled</a>
+  </li>
+</ul>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    console.log('working');
+    if(localStorage.getItem('cart') == null){
+        var cart = {};
+    }
+    else
+    {
+        cart = JSON.parse(localStorage.getItem('cart'));
+        document.getElementById('cart').innerHTML = Object.keys(cart).length;
+    }
+
+     $('.divpr').on('click', 'button.cart', function(){
+        console.log('clicked');
+        var idstr = this.id.toString();
+        console.log(idstr);
+        if (cart[idstr] !=undefined){
+            cart[idstr][0] = cart[idstr][0] + 1;
+        }
+        else
+        {
+            qty = 1;
+            name = document.getElementById('name'+ idstr).innerHTML;
+            unit_price = document.getElementById('price'+ idstr).innerHTML;
+            cart[idstr] = [qty, name, unit_price];
+        }
+        console.log(cart);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        //document.getElementById('cart').innerHTML = Object.keys(cart).length;
+        //console.log(Object.keys(cart).length);
+        updateCart(cart);
+        updatePopover(cart);
+    });
+    //document.getElementById("popcart").setAttribute('data-content', '<h5>Cart for your items in my shopping cart</h5>');
+
+    $('#popcart').popover();
+    updatePopover(cart);
+    updateCart(cart);
+
+    function updatePopover(cart) {
+    //console.log('We are inside updatePopover');
+    var popStr = "";
+    popStr = popStr + "<h5> Cart for your items in my shopping cart </h5><div class='mx-2 my-2'>";
+    var i = 1;
+    for (var item in cart) {
+        popStr = popStr + "<b>" + i + "</b>. ";
+        //console.log(document.getElementById('name' + item).innerHTML);
+        popStr = popStr + cart[item][1].slice(0, 19) + "... Qty: " + cart[item][0] + '<br>';
+        i = i + 1;
+    }
+        popStr = popStr + "</div> <a href='{% url 'checkout' %}'><button class='btn btn-primary' id ='checkout'>Checkout</button></a> <button class='btn btn-primary' onclick='clearCart()' id ='clearCart'>Clear Cart</button>     "
+        //console.log(popStr);
+        document.getElementById('popcart').setAttribute('data-content', popStr);
+        $('#popcart').popover('show');
+    }
+
+    function updateCart(cart) {
+        var sum = 0;
+
+        for (var item in cart) {
+            //console.log(item);
+            sum = sum + cart[item][0];
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        document.getElementById('cart').innerHTML = sum;
+        //console.log(cart);
+        updatePopover(cart);
+    }
+
+    function clearCart() {
+        cart = JSON.parse(localStorage.getItem('cart'));
+
+        localStorage.clear();
+        cart = {};
+        updateCart(cart);
+    }
+</script>
+{% endblock %}

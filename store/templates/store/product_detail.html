@@ -1,0 +1,294 @@
+{% extends 'store/basic.html' %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+
+{% block links %}
+    <link rel="stylesheet" href="{% static 'accounts/product_detail.css' %}">
+{% endblock %}
+
+
+{% block js %}
+    <script>
+    $(document).ready(function() {
+        $(".rating input[value='{{ my_rating }}']").attr("checked", "checked");
+
+        $(".rating input[type='radio']").click(function(event){
+            // event.preventDefault()
+            var inputValue = $(this).val()
+            console.log(inputValue)
+            var request = $.ajax({
+                csrfmiddlewaretoken : '{{ csrf_token }}',
+                method: "POST",
+                url: "{% url 'ajax_rating' %}",
+                data: {
+                    product_id: {{ product.id }},
+                    rating_value: inputValue
+                }
+            })
+            request.done(function(data){
+            })
+            request.fail(function(jqXHR, textStatus){
+                if (jqXHR.status === 404) {
+                    alert("Page not found!")
+                } else if (jqXHR.status === 401) {
+                    alert("You must be logged in to do this.")
+                } else {
+                    alert("There was an error with your request. Please try again.")
+                }
+            })
+        })
+
+    })
+
+    </script>
+{% endblock %}
+
+
+
+{% block title%} {{product.name}} - {{product.seller.username}}{% endblock %}
+{% block content %}
+{#    <a href="{% url 'store_view' product.accounts.username %}"> Go to Store {{product.accounts.profile.store_name}}  </a>#}
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home_view'%}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'store_view' store.user.username %}"> {{  store.store_name }}</a></li>
+        <li class="breadcrumb-item active"><a href="#">{{product.name}}</a></li>
+      </ol>
+    </nav>
+    <br>
+
+<div class="container">
+    <div class="row">
+    <div class="col-md-3">
+        <div class="row">
+            <img src="/media/{{product.image}}" width="233px" height="385px">
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="row">
+            <h4 id="namepr{{product.id}}" >{{product.name}}</h4>
+        </div>
+        <div class="row">
+             <p id="categ">  Category: {{product.category.category_title }} </p>
+        </div>
+        <div class="row">
+            <b> <p id="pricepr{{product.id}}">  Price: Taka. {{product.price}} </p> </b>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4"> <h5> Description</h5> </div>
+            <div class="col-sm-8"> <p>{{product.description}}</p> </div>
+        </div>
+        <div class="row">
+            <span id="divpr{{product.id}}" class="divpr">
+                <a href="{{ product.get_add_to_cart_url }}" id="pr{{product.id}}" class="btn btn-primary cart">
+                    Add To Cart
+                </a>
+                <a href="{{ product.get_remove_from_cart_url }}" id="pr{{product.id}}" class="btn btn-danger cart">Remove from Cart</a>
+            </span>
+        </div>
+    </div>
+        <div class="col-md-3">
+        </div>
+    </div>
+</div>
+
+
+
+<div class="container-fluid">
+
+    <div class="col-md-12 product-info">
+
+        <nav>
+            <div class="nav nav-tabs row" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active col-sm-4" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">Description</a>
+            <a class="nav-item nav-link col-sm-4" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Like-Review</a>
+            <a class="nav-item nav-link col-sm-4" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Comment</a>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                 <section class="container product-info">
+                    <h1> {{product.name }} </h1>
+                    <p> {{ product.description }}</p>
+                </section>
+            </div>
+
+            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                 <section class="container">
+
+                    <div class="row main-comment-section total-like-btn">
+                        <h6> {{ total_likes }} Likes </h6>
+                    </div>
+                    <div class="row main-comment-section">
+                    <p>
+                        <button class="btn btn-danger">
+                        <a class='like-btn' data-href='{{ product.get_api_like_url }}' data-likes='{{ product.likes.count }}'
+                           href='{{ product.get_like_url }}'> Like </a>
+                        </button>
+                    </p>
+
+                    </div>
+
+                    <div class="row main-comment-section">
+                        <strong>Product Rating</strong>
+                    </div>
+
+                    <div class="row main-comment-section rating">
+                        <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="Rocks!">5 stars</label>
+                        <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Pretty good">4 stars</label>
+                        <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="Meh">3 stars</label>
+                        <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="Kinda bad">2 stars</label>
+                        <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="Sucks big time">1 star</label>
+                    </div>
+
+                    <div class="row main-comment-section">
+                        {{ rating_avg.rating__avg}} Average Rating by {{ rating_avg.rating__count }}  Users
+                    </div>
+
+                    </section>
+            </div>
+            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+
+                    <h4 > Leave a comment!! </h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ comment_form|crispy }}
+                        {% if request.user.is_authenticated %}
+                            <input type="submit" value="Submit" class="btn btn-success">
+                        {% else %}
+                            <input type="submit" value="Submit" class="btn btn-success" disabled>
+                            <p> Please Login to leave a comment!! </p>
+                        {% endif %}
+                    </form>
+
+                    <div class="row main-comment-section">
+                        <h3>Comment section </h3>
+                    </div>
+
+                    <div class="row main-comment-section">
+                         <p> {{ comments.count }} Comment{{ comments|pluralize }} </p>
+                    </div>
+
+                    <div class="row main-comment-section">
+                        <div class="col-sm-12">
+                        {% for comment in comments %}
+                            <blockquote class="blockquote">
+                              <p class="mb-0">{{ comment.content }}</p>
+                              <footer class="blockquote-footer">by <cite title="Source Title"> {{ comment.user.username }} at {{ comment.date_posted }}</cite></footer>
+                            </blockquote>
+                        {% endfor %}
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="container-fluid">
+    <h3>Similar Products </h3>
+    <div class="col-md-12 product-info">
+
+        <nav>
+            <div class="nav nav-tabs row" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active col-sm-4" id="nav-vm-tab" data-toggle="tab" href="#nav-vm" role="tab" aria-controls="nav-vm" aria-selected="true">Virtual Marketplace </a>
+            <a class="nav-item nav-link col-sm-4" id="nav-ecommerce-tab" data-toggle="tab" href="#nav-ecommerce" role="tab" aria-controls="nav-ecommerce" aria-selected="false">Other Stores</a>
+            <a class="nav-item nav-link col-sm-4" id="nav-recommend-tab" data-toggle="tab" href="#nav-recommend" role="tab" aria-controls="nav-recommend" aria-selected="false">Raters of this product also Rate</a>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-vm" role="tabpanel" aria-labelledby="nav-vm-tab">
+                <div class="container">
+                    <div class="row">
+                    {% if same_products|length > 0 %}
+                    {% for product in same_products %}
+                        <div class="col-md-2 product-grid">
+                            <div class="image">
+                                <a href="{% url 'product_view' product.id %}">
+                                    <img src="/media/{{product.image}}" class="w-100">
+
+                                </a>
+                            </div>
+                            <h5 class="text-center"> {{ product.name }} </h5>
+                            <h5 class="text-center">Taka.  {{ product.price }} </h5>
+                            <h5 class="text-center">Seller: {{ product.seller.username }} </h5>
+                {#				<a href="#" class="btn buy ">BUY</a>#}
+                        </div>
+
+                    {% endfor %}
+                    {% else%}
+                          <h4> No Products Found</h4>
+                    {% endif %}
+                    </div>
+
+                </div>
+
+
+            </div>
+
+            <div class="tab-pane fade" id="nav-ecommerce" role="tabpanel" aria-labelledby="nav-ecommerce-tab">
+
+
+                <div class="container">
+                    <div class="row">
+                    {% if similar_products_real_vendor|length > 0 %}
+                        {% for product in similar_products_real_vendor %}
+                        <div class="col-sm-2 product-grid">
+
+                                <div class="image">
+                                    <a href="{{ product.link }}">
+                                         {% if product.seller == "othoba" %}
+                                        <img src="{% static "images/othoba.jpg" %}" class="w-100">
+                                        {% elif product.seller == "picaboo" %}
+                                        <img src="{% static "images/picaboo.png" %}" class="w-100">
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <h5 class="text-center"> {{ product.title }} </h5>
+                                <h5 class="text-center">Price: {{ product.price }} </h5>
+
+                         </div>
+                        {% endfor %}
+                    {% else%}
+                          <h4> No Products Found</h4>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="nav-recommend" role="tabpanel" aria-labelledby="nav-recommend-tab">
+                <div class="container">
+                     <div class="row">
+                    {% if recommended_products|length > 0 %}
+                    {% for product in recommended_products %}
+                        <div class="col-md-2 product-grid">
+                            <div class="image">
+                                <a href="{% url 'product_view' product.id %}">
+                                    <img src="/media/{{product.image}}" class="w-100">
+
+                                </a>
+                            </div>
+                            <h5 class="text-center"> {{ product.name }} </h5>
+                            <h5 class="text-center">Taka.  {{ product.price }} </h5>
+                            <h5 class="text-center">Seller: {{ product.seller.username }} </h5>
+                {#				<a href="#" class="btn buy ">BUY</a>#}
+                        </div>
+
+                    {% endfor %}
+                    {% else%}
+                          <h4> No Products Recommended</h4>
+                    {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+{% endblock %}
+
