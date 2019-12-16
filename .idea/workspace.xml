@@ -45,23 +45,24 @@
     <property name="DatabaseDriversLRU" value="sqlite" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../8th Semester/spl3/Scrappers/hello/picaboo.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/statics/vendors" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market" />
-      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\orders\templates\orders" />
-      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\market" />
-      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\media\store" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\accounts\static\accounts" />
       <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\statics\images" />
       <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market" />
       <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\market\templates\market" />
       <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\market\templates" />
-      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\accounts\static\accounts" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\statics\vendors" />
+      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market" />
+      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\orders\templates\orders" />
+      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\market" />
+      <recent name="C:\Users\Shihab\Dropbox\SPL3\SPL Ref\virtual_market\media\store" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -226,6 +227,7 @@
       <workItem from="1576474331939" duration="355000" />
       <workItem from="1576486855667" duration="512000" />
       <workItem from="1576487504306" duration="3024000" />
+      <workItem from="1576498408894" duration="1144000" />
     </task>
     <servers />
   </component>
